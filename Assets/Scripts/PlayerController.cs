@@ -9,6 +9,8 @@ public class PlayerController : MonoBehaviour
 
     public float strength = 5.0f;
 
+    public float gravity = -9.8f;
+
     //Animation
 
     public float animSpeed = .15f;
@@ -31,6 +33,30 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Space)  || Input.GetMouseButtonDown(0)) 
+        {
+            Jump();
+        }
+
+        velocity.y  += gravity * Time.deltaTime;
+
+        transform.position += velocity * Time.deltaTime;
+
+
+        playerClamp();
+    }
+    
+    private void playerClamp()
+    {
+        if(transform.position.y >= 4.7f)
+        {
+            transform.position = new Vector3(transform.position.x,4.7f,transform.position.z);
+        }
+    }
+
+    private void Jump()
+    {   
+        velocity.y = strength;
         
     }
 
