@@ -2,8 +2,10 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!78 &1
 TagManager:
-  serializedVersion: 2
-  tags: []
+  serializedVersion: 3
+  tags:
+  - ScoreT
+  - Obstacle
   layers:
   - Default
   - TransparentFX
@@ -41,3 +43,17 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Background
+    uniqueID: 1864022387
+    locked: 0
+  - name: Pipes
+    uniqueID: 870403143
+    locked: 0
+  - name: Ground
+    uniqueID: 3168497269
+    locked: 0
+  - name: Player
+    uniqueID: 154136463
+    locked: 0
+  m_RenderingLayers:
+  - Default
