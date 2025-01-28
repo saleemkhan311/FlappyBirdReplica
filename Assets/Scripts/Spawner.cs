@@ -11,13 +11,27 @@ public class Spawner : MonoBehaviour
     public float minHeight = -1;
 
     private PlayerController playerController;
+
+    public static Spawner instance;
     
     void Start()
     {
         playerController = FindAnyObjectByType<PlayerController>();
-        StartCoroutine(Coroutine());
+        instance = this;
         
     }
+
+    public void StartSpawning()
+    {
+        StartCoroutine(Coroutine());
+
+    }
+
+    public void StopSpawning()
+    {
+        StopCoroutine(Coroutine());
+    }
+
     private void OnEnable()
     {
         

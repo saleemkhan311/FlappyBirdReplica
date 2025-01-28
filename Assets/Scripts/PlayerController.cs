@@ -1,5 +1,7 @@
 using System;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -7,41 +9,49 @@ public class PlayerController : MonoBehaviour
 
     private Vector3 velocity;
 
-    public float strength = 5.0f;
+    private float strength = 5.0f;
 
-    public float gravity = -9.8f;
+    private float gravity = -12f;
 
     private Rigidbody2D rb;
 
+    
+    //Other
+
+    [NonSerialized] public bool isReady;
+   [SerializeField] private float rotationSpeed = 1f;
+   [NonSerialized] public bool isAlive;
+   [NonSerialized] public bool isGrounded = false;
+
     //Animation
 
-    public float animSpeed = .15f;
+    private float animSpeed = .06f;
 
     private SpriteRenderer spriteRenderer;
 
-    public Sprite[] sprites;
+
 
     private int spriteIndex;
 
     private float animTimer = .15f;
-    public float tiltAngle = 30.0f;
+    private float tiltAngle = 90.0f;
 
-    //Other
+    public Image white;
+    public Sprite[] sprites;
 
-    public bool isReady;
-    public float rotationSpeed = 10000f;
-    public bool isAlive;
-    public bool isGrounded = false;
+   
     
 
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
+        
+       
     }
     void Start()
     {
-        InvokeRepeating(nameof(playerAnime),animSpeed,animSpeed);
+       //InvokeRepeating(nameof(playerAnime),animSpeed,animSpeed);
         isAlive = true;
 
     }
@@ -51,6 +61,9 @@ public class PlayerController : MonoBehaviour
     {
         Jump();
         playerClamp();
+        playerAnime();
+
+
     }
     
     private void playerClamp()
@@ -63,17 +76,19 @@ public class PlayerController : MonoBehaviour
 
     private void Jump()
     {
-       
+        if (!GameManager.instance.isStarted) { return; }
 
         if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
         {
             if (!isAlive) { return; }
             velocity.y = strength;
             isReady = true;
+            GameManager.instance.tut.SetActive(false);
         }
 
         if (isReady & !isGrounded)
         {
+            
             
             velocity.y += gravity * Time.deltaTime;
             transform.position += velocity * Time.deltaTime;
@@ -86,11 +101,13 @@ public class PlayerController : MonoBehaviour
     private void playerAnime()
     {
         if (isGrounded) { return; }
+        
 
         animTimer += Time.deltaTime;
 
-        if (animTimer >= animSpeed)
+        if (animTimer >= animSpeed && isAlive)
         {
+            
 
             spriteIndex++;
             if (spriteIndex >= sprites.Length)
@@ -98,36 +115,59 @@ public class PlayerController : MonoBehaviour
                 spriteIndex = 0;
             }
 
-            for (int i = 0; i < sprites.Length; i++)
-            {
+           
                 if (sprites[spriteIndex] != null)
                 {
                     spriteRenderer.sprite = sprites[spriteIndex];
                 }
-            }
+            
+
+                animTimer = 0;
         }
-        float tilt = Mathf.Clamp(velocity.y * tiltAngle / strength, -tiltAngle, tiltAngle - 60);
-        float targetTilt = Mathf.Lerp(transform.rotation.z, tilt, Time.deltaTime * rotationSpeed);
+
+        if (!GameManager.instance.isStarted) { return; }
+        if (isReady & !isGrounded)
+        {
+            float tilt = Mathf.Clamp(velocity.y * tiltAngle / strength, -tiltAngle, tiltAngle - 60);
+            float targetTilt = Mathf.Lerp(transform.rotation.z, tilt, Time.deltaTime / rotationSpeed);
 
 
-        transform.rotation = Quaternion.Euler(0, 0, tilt);
+            transform.rotation = Quaternion.Euler(0, 0, tilt);
+        }
     }
 
+    private void GameOver()
+    {
+        GameManager.instance.SetLeaderBoard();
+        Spawner.instance.StopSpawning();
+    }
     private void OnTriggerEnter2D(Collider2D collision)
     {
+
         if (collision.gameObject.CompareTag("Obstacle"))
         {
-           
+            if (isAlive) { white.gameObject.SetActive(true); }
+
             isAlive = false;
-            Debug.Log(collision.gameObject.name);
-            if(collision.gameObject.name == "Ground")
+            
+            if (collision.gameObject.name == "Ground")
             {
                 isGrounded = true;
-                rb.constraints = RigidbodyConstraints2D.FreezeRotation;
-                rb.constraints = RigidbodyConstraints2D.FreezePosition;
+                isReady = false;
+                GameOver();
             }
         }
 
+
+
+
+
+        if (collision.gameObject.CompareTag("ScoreT"))
+        {
+            ScoreManager.instance.AddScore();
+        }
+
+    
     }
 
 }
