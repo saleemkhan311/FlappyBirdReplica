@@ -18,12 +18,20 @@ public class GameOverAnimation : MonoBehaviour
     [SerializeField] private float moveGDuration = .2f; // Duration for the move animation
     [SerializeField] private float fadeDuration = 1f; // Duration for the fade in animation
 
+    private AudioSource gameOverAudioSource;
+    public AudioClip gameOverAudioClip;
+
+    private void Awake()
+    {
+        gameOverAudioSource = gameObject.AddComponent<AudioSource>();
+    }
     private void OnEnable()
     {
         // Start the Game Over animation sequence when the script is enabled
         leaderBoard.localPosition = leaderBoardStartPos;
         restartButton.gameObject.SetActive(false);
         StartCoroutine(GameOverSequence());
+        
     }
 
     private IEnumerator GameOverSequence()
@@ -40,6 +48,8 @@ public class GameOverAnimation : MonoBehaviour
 
     private IEnumerator FadeInAndMoveGameOver()
     {
+        gameOverAudioSource.PlayOneShot(gameOverAudioClip);
+
         // Set initial positions and transparency
         gameOverImage.rectTransform.localPosition = gameOverStartPos;
         gameOverImage.color = new Color(gameOverImage.color.r, gameOverImage.color.g, gameOverImage.color.b, 0); // Fully transparent
@@ -55,6 +65,7 @@ public class GameOverAnimation : MonoBehaviour
             elapsed += Time.deltaTime;
             yield return null;
         }
+        
 
         // Ensure final position and full opacity
         gameOverImage.rectTransform.localPosition = gameOverEndPos;

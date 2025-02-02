@@ -394,3 +394,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Speed: 3
+  TopPipe: {fileID: 2490015592766442196}
+  BottomPipe: {fileID: 6301765359487421926}
+  top: {fileID: -7943022350117505252, guid: 3c23155464e91eb468859aba8c7e11ff, type: 3}
+  bottom: {fileID: -855858004967492720, guid: 3c23155464e91eb468859aba8c7e11ff, type: 3}
+  defaultTopSprite: {fileID: 6756901737921567704, guid: b495a733a910c9f42b688c9edebc19b2, type: 3}
+  defaultBottomSprite: {fileID: 2320112418328430092, guid: b495a733a910c9f42b688c9edebc19b2, type: 3}

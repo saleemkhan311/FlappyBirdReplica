@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
 public class Pipes : MonoBehaviour
 {
@@ -7,12 +8,16 @@ public class Pipes : MonoBehaviour
 
     private float leftEdge;
 
-    
+   
+
+  
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         playerController = FindAnyObjectByType<PlayerController>();
        leftEdge = Camera.main.ScreenToWorldPoint(Vector3.zero).x-1f;
+
+       
         
     }
 
@@ -24,7 +29,12 @@ public class Pipes : MonoBehaviour
             
             if (!GameManager.instance.isStarted) { return; }
             transform.position += Vector3.left * Speed * Time.deltaTime;
+
+           
         }
+
+       
+      
 
         if (transform.position.x < leftEdge) 
         {
@@ -32,4 +42,8 @@ public class Pipes : MonoBehaviour
         }
         
     }
+
+   
+
+
 }

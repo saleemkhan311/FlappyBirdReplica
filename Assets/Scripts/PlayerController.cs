@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
 
@@ -9,9 +10,9 @@ public class PlayerController : MonoBehaviour
 
     private Vector3 velocity;
 
-    private float strength = 5.0f;
+   [SerializeField] private float strength = 5.0f;
 
-    private float gravity = -12f;
+   [SerializeField] private float gravity = -20f;
 
     private Rigidbody2D rb;
 
@@ -19,9 +20,17 @@ public class PlayerController : MonoBehaviour
     //Other
 
     [NonSerialized] public bool isReady;
-   [SerializeField] private float rotationSpeed = 1f;
-   [NonSerialized] public bool isAlive;
-   [NonSerialized] public bool isGrounded = false;
+    [NonSerialized] public bool isAlive;
+    [NonSerialized] public bool isGrounded = false;
+
+
+    //Sound
+
+    private AudioSource audioSource;
+    public AudioClip flap;
+    public AudioClip hit;
+    public AudioClip scoreCollect;
+    public AudioClip fall;
 
     //Animation
 
@@ -29,6 +38,10 @@ public class PlayerController : MonoBehaviour
 
     private SpriteRenderer spriteRenderer;
 
+    float r; 
+
+    [SerializeField] private float upTiltSmoothTime = 0.2f; // Adjust for smooth upward tilt
+    [SerializeField] private float downTiltSmoothTime = 0.05f; // Lower for fast downward tilt
 
 
     private int spriteIndex;
@@ -46,6 +59,7 @@ public class PlayerController : MonoBehaviour
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
+        audioSource = GetComponent<AudioSource>();
         
        
     }
@@ -78,11 +92,13 @@ public class PlayerController : MonoBehaviour
     {
         if (!GameManager.instance.isStarted) { return; }
 
-        if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             if (!isAlive) { return; }
             velocity.y = strength;
-            isReady = true;
+            audioSource.PlayOneShot(flap);
+            if (!isReady) { isReady = true; }
+            
             GameManager.instance.tut.SetActive(false);
         }
 
@@ -128,11 +144,21 @@ public class PlayerController : MonoBehaviour
         if (!GameManager.instance.isStarted) { return; }
         if (isReady & !isGrounded)
         {
-            float tilt = Mathf.Clamp(velocity.y * tiltAngle / strength, -tiltAngle, tiltAngle - 60);
-            float targetTilt = Mathf.Lerp(transform.rotation.z, tilt, Time.deltaTime / rotationSpeed);
+            /*float tilt = Mathf.Clamp(velocity.y * tiltAngle / strength, -tiltAngle, tiltAngle - 60);
+            //float targetTilt = Mathf.Lerp(transform.rotation.z, tilt, Time.deltaTime / rotationSpeed);
+            float smoothAgnle = Mathf.SmoothDampAngle(transform.eulerAngles.z, tilt, ref r, rotationSpeed);
+            transform.rotation = Quaternion.Euler(0, 0, smoothAgnle);
+
+            Debug.Log($"Tilt: {tilt} Velocity: {velocity.y} Smooth Angle: {smoothAgnle}");*/
 
 
-            transform.rotation = Quaternion.Euler(0, 0, tilt);
+            float targetTilt = Mathf.Clamp(velocity.y * tiltAngle / strength, -tiltAngle, tiltAngle-60);
+            float currentRotationSpeed = (velocity.y < 0) ? downTiltSmoothTime : upTiltSmoothTime;
+            float smoothedTilt = Mathf.LerpAngle(transform.rotation.eulerAngles.z, targetTilt, Time.deltaTime * currentRotationSpeed);
+            transform.rotation = Quaternion.Euler(0, 0, smoothedTilt);
+
+
+
         }
     }
 
@@ -140,22 +166,52 @@ public class PlayerController : MonoBehaviour
     {
         GameManager.instance.SetLeaderBoard();
         Spawner.instance.StopSpawning();
+        GameManager.instance.PauseBtn.gameObject.SetActive(false);
     }
+
+   public bool isDead = false;
+
+    private void PlayDelay(){ audioSource.PlayOneShot(fall);}
     private void OnTriggerEnter2D(Collider2D collision)
     {
 
         if (collision.gameObject.CompareTag("Obstacle"))
         {
-            if (isAlive) { white.gameObject.SetActive(true); }
+            if (isAlive) 
+            { 
+                white.gameObject.SetActive(true);
+                GameOver();
+            }
 
             isAlive = false;
+            if (!isDead && (collision.gameObject.name == "Top" || collision.gameObject.name =="Bottom"))
+            {
+                audioSource.PlayOneShot(hit);
+                Invoke("PlayDelay", hit.length - .2f);
+                isDead = true;
+            }
             
+
+
             if (collision.gameObject.name == "Ground")
             {
                 isGrounded = true;
                 isReady = false;
-                GameOver();
+                if (!isDead)
+                {
+                    audioSource.PlayOneShot(hit);
+                    isDead = true;
+                }
+                
             }
+
+           
+            
+            
+
+            
+            
+            
         }
 
 
@@ -165,6 +221,7 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("ScoreT"))
         {
             ScoreManager.instance.AddScore();
+            audioSource.PlayOneShot(scoreCollect);
         }
 
     

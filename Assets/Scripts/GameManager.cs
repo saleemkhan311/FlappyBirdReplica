@@ -32,6 +32,10 @@ public class GameManager : MonoBehaviour
     public Image Medal;
     public Sprite[] medalSprites;
 
+    // Sound
+    private AudioSource audioSource;
+    public AudioClip woosh;
+
 
     private void Start()
     {
@@ -43,6 +47,7 @@ public class GameManager : MonoBehaviour
          p = player.transform.position;
         playerOrigin = new Vector3(-1.15f, .75f, 0f);
         playerFirstPos = new Vector3(2.11999989f, 2.0999999f, 0f);
+        audioSource= gameObject.AddComponent<AudioSource>();
 
 
     }
@@ -57,9 +62,11 @@ public class GameManager : MonoBehaviour
     {
         black.gameObject.SetActive(true);
 
-        
 
+        audioSource.PlayOneShot(woosh);
         StartCoroutine(Delay(.2f)); // 2f is the delay in seconds
+
+        
 
     }
 
@@ -150,14 +157,9 @@ public class GameManager : MonoBehaviour
     public void RestartGame()
     {
         black.gameObject.SetActive(true);
-
+        audioSource.PlayOneShot(woosh);
         StartCoroutine(DelayAnim(.2f)); 
-
-
-        
-        
-
-
+        controller.isDead = false;
     }
 
 
